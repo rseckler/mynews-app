@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { shareArticle } from "@/lib/share";
+import { BriefingTabs } from "@/components/news/briefing-tabs";
 
 interface BriefingTopic {
   emoji: string;
@@ -198,6 +199,11 @@ export default function BriefingPage() {
       </div>
 
       <div className="mx-auto max-w-3xl px-4 py-8 lg:px-8">
+        {/* Morgen / Abend Toggle */}
+        <div className="mb-6">
+          <BriefingTabs />
+        </div>
+
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
@@ -405,13 +411,6 @@ export default function BriefingPage() {
                   Uhr · Powered by Claude Sonnet
                 </p>
               </div>
-              <Link
-                href="/digest"
-                className="mt-4 flex items-center justify-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-              >
-                Abend-Digest ansehen
-                <ArrowLeft className="size-3.5 rotate-180" />
-              </Link>
             </motion.div>
           </div>
         )}

@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { shareArticle } from "@/lib/share";
+import { BriefingTabs } from "@/components/news/briefing-tabs";
 
 interface DigestTopic {
   emoji: string;
@@ -125,6 +126,11 @@ export default function DigestPage() {
       </div>
 
       <div className="mx-auto max-w-3xl px-4 py-8 lg:px-8">
+        {/* Morgen / Abend Toggle */}
+        <div className="mb-6">
+          <BriefingTabs />
+        </div>
+
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
