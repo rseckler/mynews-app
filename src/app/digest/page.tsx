@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
@@ -12,6 +12,9 @@ import {
   Share2,
   Star,
   ArrowRight,
+  Volume2,
+  Pause,
+  Play,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -53,6 +56,11 @@ export default function DigestPage() {
   const [digest, setDigest] = useState<DigestData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [audioLoading, setAudioLoading] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [audioProgress, setAudioProgress] = useState(0);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioUrlRef = useRef<string | null>(null);
 
   async function fetchDigest() {
     setLoading(true);
@@ -78,7 +86,66 @@ export default function DigestPage() {
 
   useEffect(() => {
     fetchDigest();
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+      if (audioUrlRef.current) {
+        URL.revokeObjectURL(audioUrlRef.current);
+      }
+    };
   }, []);
+
+  function digestToText(data: DigestData): string {
+    const parts = [data.greeting];
+    parts.push(`Top-Story: ${data.highlight.headline}. ${data.highlight.summary}`);
+    for (const t of data.topics) {
+      parts.push(`${t.category}: ${t.headline}. ${t.summary}`);
+    }
+    parts.push(`Ausblick: ${data.outlook}`);
+    parts.push(data.goodnight);
+    return parts.join("\n\n");
+  }
+
+  async function handleAudio() {
+    if (!digest) return;
+    if (audioRef.current && audioUrlRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+        setIsPlaying(false);
+      } else {
+        audioRef.current.play();
+        setIsPlaying(true);
+      }
+      return;
+    }
+    setAudioLoading(true);
+    try {
+      const text = digestToText(digest);
+      const res = await fetch("/api/briefing/audio", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      if (!res.ok) throw new Error("Audio generation failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      audioUrlRef.current = url;
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      audio.addEventListener("timeupdate", () => {
+        if (audio.duration) setAudioProgress((audio.currentTime / audio.duration) * 100);
+      });
+      audio.addEventListener("ended", () => { setIsPlaying(false); setAudioProgress(0); });
+      await audio.play();
+      setIsPlaying(true);
+    } catch (err) {
+      console.error("Audio error:", err);
+    } finally {
+      setAudioLoading(false);
+    }
+  }
 
   const today = new Date().toLocaleDateString("de-DE", {
     weekday: "long",
@@ -164,6 +231,58 @@ export default function DigestPage() {
               Powered by Claude Sonnet
             </span>
           </div>
+
+          {/* Audio Player */}
+          {digest && !loading && (
+            <motion.div
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.2 }}
+              className="mt-4"
+            >
+              <button
+                onClick={handleAudio}
+                disabled={audioLoading}
+                className="flex w-full items-center gap-3 rounded-xl border border-border/50 bg-card px-4 py-3 transition-colors hover:border-border"
+              >
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-indigo-500/10">
+                  {audioLoading ? (
+                    <Loader2 className="size-5 animate-spin text-indigo-500" />
+                  ) : isPlaying ? (
+                    <Pause className="size-5 text-indigo-500" />
+                  ) : (
+                    <Play className="ml-0.5 size-5 text-indigo-500" />
+                  )}
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="text-sm font-medium">
+                    {audioLoading
+                      ? "Audio wird generiert..."
+                      : isPlaying
+                        ? "Digest wird vorgelesen"
+                        : "Digest anhören"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {audioLoading
+                      ? "OpenAI TTS"
+                      : isPlaying
+                        ? `${Math.round(audioProgress)}% abgespielt`
+                        : "KI-Stimme · ca. 2 Min."}
+                  </p>
+                </div>
+                <Volume2 className="size-4 shrink-0 text-muted-foreground" />
+              </button>
+              {(isPlaying || audioProgress > 0) && (
+                <div className="mt-2 h-1 overflow-hidden rounded-full bg-muted">
+                  <motion.div
+                    className="h-full rounded-full bg-indigo-500"
+                    style={{ width: `${audioProgress}%` }}
+                    transition={{ duration: 0.3 }}
+                  />
+                </div>
+              )}
+            </motion.div>
+          )}
         </motion.div>
 
         {/* Loading */}

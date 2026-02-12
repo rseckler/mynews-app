@@ -24,21 +24,34 @@ export function CategoryTabs({
       >
         {CATEGORIES.map((cat) => {
           const isActive = activeCategory === cat.id;
+          const isForYou = cat.id === "for-you";
           return (
             <button
               key={cat.id}
               onClick={() => onCategoryChange(cat.id)}
               className={cn(
                 "relative shrink-0 px-3 py-3 text-sm font-medium transition-colors whitespace-nowrap",
-                isActive
-                  ? "text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
+                isForYou && isActive
+                  ? "text-primary font-bold"
+                  : isActive
+                    ? "text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
               )}
             >
-              {cat.label}
+              {isForYou ? (
+                <span className="flex items-center gap-1">
+                  <span className="text-base">✦</span>
+                  {cat.label}
+                </span>
+              ) : (
+                cat.label
+              )}
               {isActive && (
                 <span
-                  className="absolute inset-x-3 bottom-0 h-0.5 rounded-full"
+                  className={cn(
+                    "absolute inset-x-3 bottom-0 rounded-full",
+                    isForYou ? "h-[3px]" : "h-0.5"
+                  )}
                   style={{ backgroundColor: cat.color }}
                 />
               )}

@@ -1,44 +1,36 @@
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 60; // Allow up to 60s for TTS generation on Vercel
-
-// Cache audio for the current day to avoid re-generating
-let cachedAudio: { date: string; data: ArrayBuffer } | null = null;
+export const maxDuration = 60;
 
 export async function POST(request: Request) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
+    console.error("TTS: OPENAI_API_KEY not set");
     return NextResponse.json(
       { error: "OPENAI_API_KEY not configured" },
       { status: 503 }
     );
   }
 
-  const { text } = await request.json();
-  if (!text || typeof text !== "string") {
-    return NextResponse.json(
-      { error: "text is required" },
-      { status: 400 }
-    );
+  let body: { text?: string };
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const today = new Date().toISOString().slice(0, 10);
-
-  // Return cached audio if available for today
-  if (cachedAudio && cachedAudio.date === today) {
-    return new Response(cachedAudio.data, {
-      headers: {
-        "Content-Type": "audio/mpeg",
-        "Cache-Control": "public, max-age=86400",
-      },
-    });
+  const { text } = body;
+  if (!text || typeof text !== "string") {
+    return NextResponse.json({ error: "text is required" }, { status: 400 });
   }
 
   // Trim text to stay within TTS limits (~4096 chars)
   const trimmedText = text.slice(0, 4000);
 
   try {
+    console.log(`TTS: Generating audio for ${trimmedText.length} chars...`);
+
     const res = await fetch("https://api.openai.com/v1/audio/speech", {
       method: "POST",
       headers: {
@@ -55,23 +47,21 @@ export async function POST(request: Request) {
     });
 
     if (!res.ok) {
-      const err = await res.text();
-      console.error("OpenAI TTS error:", res.status, err);
+      const errText = await res.text();
+      console.error("OpenAI TTS error:", res.status, errText);
       return NextResponse.json(
-        { error: "TTS generation failed" },
-        { status: 500 }
+        { error: `TTS failed: ${res.status}` },
+        { status: 502 }
       );
     }
 
     const data = await res.arrayBuffer();
-
-    // Cache for the day
-    cachedAudio = { date: today, data };
+    console.log(`TTS: Success, ${data.byteLength} bytes`);
 
     return new Response(data, {
       headers: {
         "Content-Type": "audio/mpeg",
-        "Cache-Control": "public, max-age=86400",
+        "Cache-Control": "public, max-age=3600",
       },
     });
   } catch (err) {
