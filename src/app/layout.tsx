@@ -18,6 +18,8 @@ export const metadata: Metadata = {
   description:
     "AI-kuratierte Nachrichten aus vertrauenswürdigen Quellen. Personalisiert, transparent, aktuell.",
   keywords: ["news", "nachrichten", "AI", "personalisiert", "kuratiert"],
+  manifest: "/manifest.json",
+  icons: { icon: "/icon.svg", apple: "/icon.svg" },
   openGraph: {
     type: "website",
     locale: "de_DE",
@@ -56,6 +58,8 @@ export default function RootLayout({
     <html lang="de" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
       <body className={`${inter.variable} font-sans antialiased`}>
         <TooltipProvider delayDuration={300}>

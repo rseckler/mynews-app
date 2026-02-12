@@ -14,6 +14,8 @@ import {
   TrendingUp,
   Compass,
   Heart,
+  ThumbsUp,
+  ThumbsDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +34,7 @@ import {
 } from "@/lib/mock-data";
 import { isBookmarked, toggleBookmark } from "@/lib/bookmarks";
 import { shareArticle } from "@/lib/share";
+import { getFeedback, setFeedback, type FeedbackType } from "@/lib/feedback";
 
 interface ArticleCardProps {
   article: Article;
@@ -57,6 +60,12 @@ export function ArticleCard({
 }: ArticleCardProps) {
   const [imageError, setImageError] = useState(false);
   const [bookmarked, setBookmarked] = useState(() => isBookmarked(article.id));
+  const [feedback, setFeedbackState] = useState<FeedbackType>(() => getFeedback(article.id));
+
+  function handleFeedback(type: "like" | "dislike") {
+    const result = setFeedback(article.id, type);
+    setFeedbackState(result);
+  }
   const categoryColor = getCategoryColor(article.category);
   const categoryLabel = getCategoryLabel(article.category);
   const timeAgo = formatTimeAgo(article.publishedAt);
@@ -168,6 +177,34 @@ export function ArticleCard({
                 </TooltipTrigger>
                 <TooltipContent>Teilen</TooltipContent>
               </Tooltip>
+              <div className="ml-1 flex items-center gap-0.5 border-l border-border/50 pl-1">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={cn("size-7", feedback === "like" ? "text-green-500" : "text-muted-foreground")}
+                      onClick={() => handleFeedback("like")}
+                    >
+                      <ThumbsUp className="size-3" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Hilfreich</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={cn("size-7", feedback === "dislike" ? "text-red-500" : "text-muted-foreground")}
+                      onClick={() => handleFeedback("dislike")}
+                    >
+                      <ThumbsDown className="size-3" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Nicht hilfreich</TooltipContent>
+                </Tooltip>
+              </div>
             </div>
 
             <div className="flex items-center gap-3 text-xs text-muted-foreground">

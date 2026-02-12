@@ -17,6 +17,8 @@ import {
   ChevronUp,
   Info,
   Loader2,
+  ThumbsUp,
+  ThumbsDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +33,7 @@ import {
 import { getArticleContent } from "@/lib/mock-content";
 import { isBookmarked, toggleBookmark } from "@/lib/bookmarks";
 import { shareArticle } from "@/lib/share";
+import { getFeedback, setFeedback, type FeedbackType } from "@/lib/feedback";
 
 interface ArticleDetailProps {
   article: Article;
@@ -65,6 +68,7 @@ export function ArticleDetail({ article }: ArticleDetailProps) {
   const [aiSummary, setAiSummary] = useState<string | null>(article.aiSummary ?? null);
   const [aiSentiment, setAiSentiment] = useState<string | undefined>(article.sentiment);
   const [summaryLoading, setSummaryLoading] = useState(false);
+  const [feedback, setFeedbackState] = useState<FeedbackType>(() => getFeedback(article.id));
 
   const categoryColor = getCategoryColor(article.category);
   const categoryLabel = getCategoryLabel(article.category);
@@ -112,7 +116,30 @@ export function ArticleDetail({ article }: ArticleDetailProps) {
             <ArrowLeft className="size-4" />
             Zurück
           </Link>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0.5">
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`size-8 ${feedback === "like" ? "text-green-500" : "text-muted-foreground"}`}
+              onClick={() => {
+                const result = setFeedback(article.id, "like");
+                setFeedbackState(result);
+              }}
+            >
+              <ThumbsUp className="size-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`size-8 ${feedback === "dislike" ? "text-red-500" : "text-muted-foreground"}`}
+              onClick={() => {
+                const result = setFeedback(article.id, "dislike");
+                setFeedbackState(result);
+              }}
+            >
+              <ThumbsDown className="size-4" />
+            </Button>
+            <div className="mx-0.5 h-4 w-px bg-border/50" />
             <Button
               variant="ghost"
               size="icon"

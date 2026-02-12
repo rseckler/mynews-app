@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ArticleCard } from "./article-card";
 import { AiSummary } from "./ai-summary";
@@ -12,6 +12,10 @@ import { MOCK_ARTICLES } from "@/lib/mock-data";
 import { cacheArticles } from "@/lib/article-cache";
 import type { Article, Category } from "@/types";
 
+/** Number of articles to show initially and per "load more" click */
+const INITIAL_VISIBLE = 12;
+const LOAD_MORE_COUNT = 8;
+
 export function Feed() {
   const [activeCategory, setActiveCategory] = useState<Category>("for-you");
   const [articles, setArticles] = useState<Article[]>(MOCK_ARTICLES);
@@ -21,9 +25,11 @@ export function Feed() {
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE);
 
   const fetchArticles = useCallback(async (category: Category) => {
     setLoading(true);
+    setVisibleCount(INITIAL_VISIBLE);
     try {
       const res = await fetch(`/api/feed?category=${category}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -33,7 +39,6 @@ export function Feed() {
       cacheArticles(data.articles);
     } catch (err) {
       console.error("Feed fetch error:", err);
-      // Fallback to mock data
       const fallback =
         category === "for-you"
           ? MOCK_ARTICLES
@@ -41,8 +46,8 @@ export function Feed() {
       setArticles(fallback);
       setSource("mock");
       cacheArticles(fallback);
-      setLastUpdated(new Date());
     } finally {
+      setLastUpdated(new Date());
       setLoading(false);
       setRefreshing(false);
     }
@@ -52,10 +57,13 @@ export function Feed() {
     fetchArticles(activeCategory);
   }, [activeCategory, fetchArticles]);
 
-  const breakingArticle = articles.find((a) => a.isBreaking) ?? null;
-  const featuredArticle = articles[0];
-  const standardArticles = articles.slice(1, 7);
-  const compactArticles = articles.slice(7);
+  const visibleArticles = articles.slice(0, visibleCount);
+  const hasMore = visibleCount < articles.length;
+
+  const breakingArticle = visibleArticles.find((a) => a.isBreaking) ?? null;
+  const featuredArticle = visibleArticles[0];
+  const standardArticles = visibleArticles.slice(1, 7);
+  const compactArticles = visibleArticles.slice(7);
 
   function handleRefresh() {
     setRefreshing(true);
@@ -161,6 +169,20 @@ export function Feed() {
                         />
                       ))}
                     </div>
+                  </div>
+                )}
+
+                {/* Load more */}
+                {hasMore && (
+                  <div className="flex justify-center pt-2">
+                    <Button
+                      variant="outline"
+                      className="gap-2"
+                      onClick={() => setVisibleCount((c) => c + LOAD_MORE_COUNT)}
+                    >
+                      <ChevronDown className="size-4" />
+                      Mehr laden ({articles.length - visibleCount} weitere)
+                    </Button>
                   </div>
                 )}
               </>
