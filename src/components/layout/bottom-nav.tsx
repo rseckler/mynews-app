@@ -43,7 +43,7 @@ export function BottomNav() {
               <item.icon
                 className={cn("size-5", isActive && "stroke-[2.5px]")}
               />
-              <span className="text-[10px] font-medium">{item.label}</span>
+              <span className="text-xs font-medium">{item.label}</span>
             </Link>
           );
         })}

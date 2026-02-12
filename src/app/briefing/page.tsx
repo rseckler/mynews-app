@@ -399,7 +399,7 @@ export default function BriefingPage() {
                       </h3>
                     </div>
                   </div>
-                  <p className="text-sm leading-relaxed text-muted-foreground">
+                  <p className="text-base leading-relaxed text-muted-foreground sm:text-sm">
                     {topic.summary}
                   </p>
                 </motion.div>

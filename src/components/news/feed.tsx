@@ -102,7 +102,7 @@ export function Feed() {
       {/* Source indicator + refresh */}
       {!loading && (
         <div className="mx-auto max-w-7xl px-4 lg:px-8">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground sm:text-xs">
             <div
               className={`size-1.5 rounded-full ${source === "live" ? "bg-green-500" : "bg-amber-500"}`}
             />

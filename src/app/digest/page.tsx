@@ -382,7 +382,7 @@ export default function DigestPage() {
                   <h2 className="text-lg font-bold leading-snug">
                     {digest.highlight.headline}
                   </h2>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  <p className="mt-2 text-base leading-relaxed text-muted-foreground sm:text-sm">
                     {digest.highlight.summary}
                   </p>
                 </div>
@@ -413,7 +413,7 @@ export default function DigestPage() {
                       <h3 className="text-base font-semibold leading-snug">
                         {topic.headline}
                       </h3>
-                      <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                      <p className="mt-1.5 text-base leading-relaxed text-muted-foreground sm:text-sm">
                         {topic.summary}
                       </p>
                     </div>
@@ -436,7 +436,7 @@ export default function DigestPage() {
                 <ArrowRight className="size-4 text-primary" />
                 Ausblick auf morgen
               </div>
-              <p className="text-sm leading-relaxed text-muted-foreground">
+              <p className="text-base leading-relaxed text-muted-foreground sm:text-sm">
                 {digest.outlook}
               </p>
             </motion.div>

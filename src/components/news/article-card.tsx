@@ -135,7 +135,7 @@ export function ArticleCard({
           </Link>
 
           {/* Description */}
-          <p className="mb-4 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+          <p className="mb-4 line-clamp-2 text-base leading-relaxed text-muted-foreground sm:text-sm">
             {article.description}
           </p>
 
@@ -243,13 +243,13 @@ export function ArticleCard({
           style={{ backgroundColor: categoryColor }}
         />
         <div className="min-w-0 flex-1">
-          <div className="mb-1 flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="mb-1 flex items-center gap-2 text-sm text-muted-foreground sm:text-xs">
             <span className="font-medium">{article.sourceName}</span>
             <span>·</span>
             <span>{timeAgo}</span>
           </div>
           <Link href={`/article/${article.id}`}>
-            <h3 className="line-clamp-2 text-sm font-semibold leading-snug transition-colors hover:text-primary">
+            <h3 className="line-clamp-2 text-base font-semibold leading-snug transition-colors hover:text-primary sm:text-sm">
               {article.title}
             </h3>
           </Link>
@@ -282,7 +282,7 @@ export function ArticleCard({
         {/* Content */}
         <div className="flex min-w-0 flex-1 flex-col p-4">
           {/* Source row */}
-          <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground sm:text-xs">
             <span className="font-medium text-foreground/80">
               {article.sourceName}
             </span>
@@ -306,7 +306,7 @@ export function ArticleCard({
           </Link>
 
           {/* Description */}
-          <p className="mb-3 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+          <p className="mb-3 line-clamp-2 text-base leading-relaxed text-muted-foreground sm:text-sm">
             {article.description}
           </p>
 

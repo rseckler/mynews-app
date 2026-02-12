@@ -30,7 +30,7 @@ export function CategoryTabs({
               key={cat.id}
               onClick={() => onCategoryChange(cat.id)}
               className={cn(
-                "relative shrink-0 px-3 py-3 text-sm font-medium transition-colors whitespace-nowrap",
+                "relative shrink-0 px-3 py-3 text-base font-medium transition-colors whitespace-nowrap sm:text-sm",
                 isForYou && isActive
                   ? "text-primary font-bold"
                   : isActive
