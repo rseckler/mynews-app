@@ -99,7 +99,7 @@ export function Feed() {
             />
             <span>
               {source === "live"
-                ? "Live-Nachrichten via NewsAPI"
+                ? "Live-Nachrichten · NewsAPI + RSS"
                 : "Demo-Daten (kein API-Key)"}
             </span>
             {lastUpdated && (

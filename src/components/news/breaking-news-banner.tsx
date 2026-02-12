@@ -13,10 +13,9 @@ interface BreakingNewsBannerProps {
 export function BreakingNewsBanner({ article }: BreakingNewsBannerProps) {
   const [visible, setVisible] = useState(true);
 
+  // Reset visibility when article changes
   useEffect(() => {
-    if (!article) return;
-    const timer = setTimeout(() => setVisible(false), 30000);
-    return () => clearTimeout(timer);
+    if (article) setVisible(true);
   }, [article]);
 
   if (!article || !visible) return null;

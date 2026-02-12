@@ -64,6 +64,7 @@ function SentimentDot({ sentiment }: { sentiment?: string }) {
 export function ArticleDetail({ article }: ArticleDetailProps) {
   const [summaryOpen, setSummaryOpen] = useState(true);
   const [whyOpen, setWhyOpen] = useState(false);
+  const [contentExpanded, setContentExpanded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [bookmarked, setBookmarked] = useState(() => isBookmarked(article.id));
   const [aiSummary, setAiSummary] = useState<string | null>(article.aiSummary ?? null);
@@ -314,19 +315,95 @@ export function ArticleDetail({ article }: ArticleDetailProps) {
           transition={{ duration: 0.4, delay: 0.25 }}
           className="mb-8 space-y-4"
         >
-          {contentParagraphs.length > 0 ? (
-            contentParagraphs.map((paragraph, i) => (
-              <p key={i} className="text-base leading-relaxed">
-                {paragraph}
-              </p>
-            ))
-          ) : (
-            <div className="rounded-lg bg-muted/50 p-4 text-center text-sm text-muted-foreground">
-              <p>
-                Der vollständige Artikel ist beim Originalverlag verfügbar.
-              </p>
-            </div>
-          )}
+          {(() => {
+            // Build content from available sources: mock content, article.content, or description
+            const rawContent = article.content
+              ? article.content.replace(/\[\+\d+ chars\]$/, "").trim()
+              : "";
+            const paragraphs =
+              contentParagraphs.length > 0
+                ? contentParagraphs
+                : rawContent
+                  ? rawContent.split(/\n\n|\n/).filter((p) => p.trim().length > 0)
+                  : article.description
+                    ? [article.description]
+                    : [];
+
+            if (paragraphs.length === 0) {
+              return (
+                <div className="rounded-lg bg-muted/50 p-4 text-center text-sm text-muted-foreground">
+                  <p>Der vollständige Artikel ist beim Originalverlag verfügbar.</p>
+                </div>
+              );
+            }
+
+            // Split into lines (~80 chars each) for the 10-line preview
+            const allLines: string[] = [];
+            for (const p of paragraphs) {
+              const words = p.split(/\s+/);
+              let line = "";
+              for (const w of words) {
+                if (line.length + w.length + 1 > 80 && line.length > 0) {
+                  allLines.push(line);
+                  line = w;
+                } else {
+                  line = line ? `${line} ${w}` : w;
+                }
+              }
+              if (line) allLines.push(line);
+              allLines.push(""); // paragraph break
+            }
+
+            const LINE_LIMIT = 10;
+            const needsExpand = allLines.length > LINE_LIMIT;
+            const visibleLines = contentExpanded ? allLines : allLines.slice(0, LINE_LIMIT);
+
+            // Re-join lines into paragraphs for display
+            const displayParagraphs: string[] = [];
+            let current = "";
+            for (const l of visibleLines) {
+              if (l === "") {
+                if (current) displayParagraphs.push(current);
+                current = "";
+              } else {
+                current = current ? `${current} ${l}` : l;
+              }
+            }
+            if (current) displayParagraphs.push(current);
+
+            return (
+              <>
+                <div className={`space-y-4 ${!contentExpanded && needsExpand ? "relative" : ""}`}>
+                  {displayParagraphs.map((paragraph, i) => (
+                    <p key={i} className="text-base leading-relaxed">
+                      {paragraph}
+                    </p>
+                  ))}
+                  {!contentExpanded && needsExpand && (
+                    <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent" />
+                  )}
+                </div>
+                {needsExpand && (
+                  <button
+                    onClick={() => setContentExpanded(!contentExpanded)}
+                    className="flex items-center gap-1.5 text-sm font-medium text-primary transition-colors hover:text-primary/80"
+                  >
+                    {contentExpanded ? (
+                      <>
+                        <ChevronUp className="size-4" />
+                        Weniger anzeigen
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown className="size-4" />
+                        Weiterlesen
+                      </>
+                    )}
+                  </button>
+                )}
+              </>
+            );
+          })()}
         </motion.div>
 
         <Separator className="mb-6" />

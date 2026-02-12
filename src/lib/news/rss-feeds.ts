@@ -11,6 +11,7 @@ interface RSSFeedConfig {
  * All feeds return standard RSS 2.0 with <item> elements.
  */
 const RSS_FEEDS: RSSFeedConfig[] = [
+  // Öffentlich-rechtliche
   {
     url: "https://www.tagesschau.de/xml/rss2/",
     name: "tagesschau",
@@ -25,6 +26,33 @@ const RSS_FEEDS: RSSFeedConfig[] = [
     url: "https://www.deutschlandfunk.de/nachrichten-100.rss",
     name: "Deutschlandfunk",
     defaultCategory: "politik",
+  },
+  {
+    url: "https://www.sportschau.de/index~rss2.xml",
+    name: "Sportschau",
+    defaultCategory: "sport",
+  },
+  // Qualitätspresse
+  {
+    url: "https://www.spiegel.de/schlagzeilen/index.rss",
+    name: "Der Spiegel",
+    defaultCategory: "politik",
+  },
+  {
+    url: "https://www.zeit.de/news/index",
+    name: "Die Zeit",
+    defaultCategory: "politik",
+  },
+  // Tech & Wissenschaft
+  {
+    url: "https://www.heise.de/rss/heise-top-atom.xml",
+    name: "heise online",
+    defaultCategory: "tech",
+  },
+  {
+    url: "https://www.netzpolitik.org/feed/",
+    name: "netzpolitik.org",
+    defaultCategory: "tech",
   },
 ];
 

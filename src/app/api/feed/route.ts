@@ -39,11 +39,36 @@ export async function GET(request: Request) {
       return true;
     });
 
-    // Sort by publishedAt descending
+    // Sort by publishedAt descending first
     deduped.sort(
       (a, b) =>
         new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
     );
+
+    // Interleave sources for diversity: avoid clusters from the same source.
+    // Group by source, then round-robin pick from each source.
+    const bySource = new Map<string, typeof deduped>();
+    for (const a of deduped) {
+      const list = bySource.get(a.sourceName) ?? [];
+      list.push(a);
+      bySource.set(a.sourceName, list);
+    }
+    const sourceQueues = [...bySource.values()];
+    const interleaved: typeof deduped = [];
+    let idx = 0;
+    while (interleaved.length < deduped.length) {
+      let added = false;
+      for (const queue of sourceQueues) {
+        if (idx < queue.length) {
+          interleaved.push(queue[idx]);
+          added = true;
+        }
+      }
+      if (!added) break;
+      idx++;
+    }
+    deduped.length = 0;
+    deduped.push(...interleaved);
 
     if (category === "for-you") {
       articles = deduped;
