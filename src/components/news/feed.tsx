@@ -90,8 +90,8 @@ export function Feed() {
 
   return (
     <>
-      {/* Breaking News */}
-      <BreakingNewsBanner article={breakingArticle} />
+      {/* Breaking News — only show after loading finishes to avoid flash from mock data */}
+      <BreakingNewsBanner article={loading ? null : breakingArticle} />
 
       {/* Category Navigation */}
       <CategoryTabs

@@ -320,28 +320,59 @@ export function ArticleDetail({ article }: ArticleDetailProps) {
             const rawContent = article.content
               ? article.content.replace(/\[\+\d+ chars\]$/, "").trim()
               : "";
-            const paragraphs =
-              contentParagraphs.length > 0
-                ? contentParagraphs
-                : rawContent
-                  ? rawContent.split(/\.\s+/).filter((p) => p.trim().length > 10).map((p) => p.endsWith(".") ? p : p + ".")
-                  : article.description
-                    ? [article.description]
-                    : [];
 
+            // Use mock content if available, otherwise use RSS content
+            let paragraphs: string[] = [];
+            if (contentParagraphs.length > 0) {
+              paragraphs = contentParagraphs;
+            } else if (rawContent && rawContent !== article.description) {
+              // RSS content that differs from description — split into paragraphs
+              paragraphs = rawContent
+                .split(/(?<=\.)\s{2,}|\n\n+/)
+                .filter((p) => p.trim().length > 10)
+                .map((p) => p.trim());
+              // If splitting didn't produce multiple paragraphs, try splitting on sentences
+              if (paragraphs.length <= 1 && rawContent.length > 200) {
+                const sentences = rawContent.split(/(?<=\.)\s+/);
+                paragraphs = [];
+                let current = "";
+                for (const s of sentences) {
+                  current += (current ? " " : "") + s;
+                  if (current.length > 150) {
+                    paragraphs.push(current);
+                    current = "";
+                  }
+                }
+                if (current.trim()) paragraphs.push(current.trim());
+              }
+            } else if (rawContent) {
+              // Content equals description — show it once in the content section
+              paragraphs = [rawContent];
+            }
+
+            // If no content at all, show a link to the original
             if (paragraphs.length === 0) {
               return (
-                <div className="rounded-lg bg-muted/50 p-4 text-center text-sm text-muted-foreground">
-                  <p>Der vollständige Artikel ist beim Originalverlag verfügbar.</p>
+                <div className="rounded-lg border border-border/50 bg-muted/50 p-4 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    Kein erweiterter Artikeltext verfügbar.
+                  </p>
+                  <button
+                    onClick={() => window.open(article.url, "_blank")}
+                    className="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-primary transition-colors hover:text-primary/80"
+                  >
+                    <ExternalLink className="size-3.5" />
+                    Vollständigen Artikel lesen
+                  </button>
                 </div>
               );
             }
 
             const fullText = paragraphs.join(" ");
-            const CHAR_LIMIT = 600;
+            const CHAR_LIMIT = 250;
             const needsExpand = fullText.length > CHAR_LIMIT;
 
-            // Show preview (first ~600 chars, cut at sentence boundary) or full
+            // Show preview (first ~250 chars, cut at paragraph boundary) or full
             let previewParagraphs = paragraphs;
             if (!contentExpanded && needsExpand) {
               let charCount = 0;
@@ -381,7 +412,7 @@ export function ArticleDetail({ article }: ArticleDetailProps) {
                     ) : (
                       <>
                         <ChevronDown className="size-4" />
-                        Weiterlesen
+                        Weiterlesen ({Math.ceil((fullText.length - CHAR_LIMIT) / 100) * 100}+ Zeichen mehr)
                       </>
                     )}
                   </button>

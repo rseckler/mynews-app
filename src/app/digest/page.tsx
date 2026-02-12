@@ -57,6 +57,7 @@ export default function DigestPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [audioLoading, setAudioLoading] = useState(false);
+  const [audioError, setAudioError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioProgress, setAudioProgress] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -121,6 +122,7 @@ export default function DigestPage() {
       return;
     }
     setAudioLoading(true);
+    setAudioError(null);
     try {
       const text = digestToText(digest);
       const res = await fetch("/api/briefing/audio", {
@@ -128,7 +130,10 @@ export default function DigestPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text }),
       });
-      if (!res.ok) throw new Error("Audio generation failed");
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+        throw new Error(errData.error || `HTTP ${res.status}`);
+      }
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       audioUrlRef.current = url;
@@ -142,6 +147,7 @@ export default function DigestPage() {
       setIsPlaying(true);
     } catch (err) {
       console.error("Audio error:", err);
+      setAudioError(err instanceof Error ? err.message : "Audio-Generierung fehlgeschlagen");
     } finally {
       setAudioLoading(false);
     }
@@ -280,6 +286,11 @@ export default function DigestPage() {
                     transition={{ duration: 0.3 }}
                   />
                 </div>
+              )}
+              {audioError && (
+                <p className="mt-2 text-xs text-destructive">
+                  {audioError}
+                </p>
               )}
             </motion.div>
           )}

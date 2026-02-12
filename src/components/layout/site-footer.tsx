@@ -64,24 +64,24 @@ export function SiteFooter() {
             </h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <span className="text-muted-foreground cursor-default">
+                <Link href="/impressum" className="text-muted-foreground transition-colors hover:text-foreground">
                   Impressum
-                </span>
+                </Link>
               </li>
               <li>
-                <span className="text-muted-foreground cursor-default">
+                <Link href="/datenschutz" className="text-muted-foreground transition-colors hover:text-foreground">
                   Datenschutzerklärung
-                </span>
+                </Link>
               </li>
               <li>
-                <span className="text-muted-foreground cursor-default">
+                <Link href="/nutzungsbedingungen" className="text-muted-foreground transition-colors hover:text-foreground">
                   Nutzungsbedingungen
-                </span>
+                </Link>
               </li>
               <li>
-                <span className="text-muted-foreground cursor-default">
+                <Link href="/cookies" className="text-muted-foreground transition-colors hover:text-foreground">
                   Cookie-Einstellungen
-                </span>
+                </Link>
               </li>
             </ul>
           </div>

@@ -19,12 +19,7 @@ export const metadata: Metadata = {
     "AI-kuratierte Nachrichten aus vertrauenswürdigen Quellen. Personalisiert, transparent, aktuell.",
   keywords: ["news", "nachrichten", "AI", "personalisiert", "kuratiert"],
   manifest: "/manifest.json",
-  icons: {
-    icon: [
-      { url: "/icon.svg", type: "image/svg+xml" },
-    ],
-    apple: "/icon.svg",
-  },
+  // icons generated via src/app/icon.tsx and apple-icon.tsx
   openGraph: {
     type: "website",
     locale: "de_DE",

@@ -22,6 +22,8 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { getBookmarks } from "@/lib/bookmarks";
 import { getFeedGroups, RSS_FEEDS } from "@/lib/news/rss-feeds";
+import { CATEGORIES } from "@/lib/mock-data";
+import type { Category } from "@/types";
 
 const SOURCES_KEY = "mynews-disabled-sources";
 
@@ -38,16 +40,25 @@ function setDisabledSources(sources: string[]) {
   localStorage.setItem(SOURCES_KEY, JSON.stringify(sources));
 }
 
+const SELECTABLE_CATEGORIES = CATEGORIES.filter((c) => c.id !== "for-you");
+
 export default function ProfilePage() {
   const [bookmarkCount, setBookmarkCount] = useState(0);
   const [isDark, setIsDark] = useState(false);
   const [sourcesOpen, setSourcesOpen] = useState(false);
+  const [interestsOpen, setInterestsOpen] = useState(false);
+  const [selectedInterests, setSelectedInterests] = useState<Category[]>([]);
   const [disabledSources, setDisabledState] = useState<string[]>([]);
 
   useEffect(() => {
     setBookmarkCount(getBookmarks().length);
     setIsDark(document.documentElement.classList.contains("dark"));
     setDisabledState(getDisabledSources());
+    // Load saved interests
+    try {
+      const raw = localStorage.getItem("mynews-interests");
+      if (raw) setSelectedInterests(JSON.parse(raw));
+    } catch {}
   }, []);
 
   function toggleTheme() {
@@ -55,6 +66,14 @@ export default function ProfilePage() {
     setIsDark(next);
     document.documentElement.classList.toggle("dark", next);
     localStorage.setItem("mynews-theme", next ? "dark" : "light");
+  }
+
+  function toggleInterest(id: Category) {
+    const updated = selectedInterests.includes(id)
+      ? selectedInterests.filter((c) => c !== id)
+      : [...selectedInterests, id];
+    setSelectedInterests(updated);
+    localStorage.setItem("mynews-interests", JSON.stringify(updated));
   }
 
   function toggleSource(name: string) {
@@ -153,13 +172,64 @@ export default function ProfilePage() {
             <ChevronRight className="size-4 text-muted-foreground" />
           </button>
 
-          <button className="flex w-full items-center justify-between rounded-lg px-3 py-3 transition-colors hover:bg-muted/50">
+          <button
+            onClick={() => setInterestsOpen(!interestsOpen)}
+            className="flex w-full items-center justify-between rounded-lg px-3 py-3 transition-colors hover:bg-muted/50"
+          >
             <div className="flex items-center gap-3">
               <Settings className="size-5" />
               <span className="text-sm font-medium">Interessen anpassen</span>
             </div>
-            <ChevronRight className="size-4 text-muted-foreground" />
+            {interestsOpen ? (
+              <ChevronUp className="size-4 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="size-4 text-muted-foreground" />
+            )}
           </button>
+
+          {interestsOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              transition={{ duration: 0.3 }}
+              className="px-3 pb-3"
+            >
+              <p className="mb-3 text-xs text-muted-foreground">
+                Wähle die Kategorien, die dich interessieren. Dein Feed wird entsprechend angepasst.
+              </p>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {SELECTABLE_CATEGORIES.map((cat) => {
+                  const isSelected = selectedInterests.includes(cat.id);
+                  return (
+                    <button
+                      key={cat.id}
+                      onClick={() => toggleInterest(cat.id)}
+                      className={`flex items-center gap-2 rounded-lg border-2 px-3 py-2.5 text-sm font-medium transition-all ${
+                        isSelected
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-primary/30"
+                      }`}
+                    >
+                      <div
+                        className="flex size-6 items-center justify-center rounded-full"
+                        style={{
+                          backgroundColor: isSelected ? cat.color : `${cat.color}20`,
+                        }}
+                      >
+                        {isSelected && <Check className="size-3.5 text-white" />}
+                      </div>
+                      <span className={isSelected ? "text-foreground" : "text-muted-foreground"}>
+                        {cat.label}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="mt-2 text-xs text-muted-foreground">
+                {selectedInterests.length} von {SELECTABLE_CATEGORIES.length} Kategorien ausgewählt
+              </p>
+            </motion.div>
+          )}
 
           <button className="flex w-full items-center justify-between rounded-lg px-3 py-3 transition-colors hover:bg-muted/50">
             <div className="flex items-center gap-3">
