@@ -8,6 +8,8 @@ export const dynamic = "force-dynamic";
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const category = searchParams.get("category") ?? "for-you";
+  const disabledParam = searchParams.get("disabled") ?? "";
+  const disabledSources = disabledParam ? disabledParam.split(",") : undefined;
 
   const apiKey = process.env.NEWSAPI_KEY;
 
@@ -22,7 +24,7 @@ export async function GET(request: Request) {
             return [];
           })
         : Promise.resolve([]),
-      fetchRSSFeeds().catch((err) => {
+      fetchRSSFeeds(disabledSources).catch((err) => {
         console.error("RSS feeds error:", err);
         return [];
       }),

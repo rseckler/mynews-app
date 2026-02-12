@@ -313,10 +313,10 @@ export function ArticleDetail({ article }: ArticleDetailProps) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4, delay: 0.25 }}
-          className="mb-8 space-y-4"
+          className="mb-8"
         >
           {(() => {
-            // Build content from available sources: mock content, article.content, or description
+            // Build content from available sources
             const rawContent = article.content
               ? article.content.replace(/\[\+\d+ chars\]$/, "").trim()
               : "";
@@ -324,7 +324,7 @@ export function ArticleDetail({ article }: ArticleDetailProps) {
               contentParagraphs.length > 0
                 ? contentParagraphs
                 : rawContent
-                  ? rawContent.split(/\n\n|\n/).filter((p) => p.trim().length > 0)
+                  ? rawContent.split(/\.\s+/).filter((p) => p.trim().length > 10).map((p) => p.endsWith(".") ? p : p + ".")
                   : article.description
                     ? [article.description]
                     : [];
@@ -337,50 +337,35 @@ export function ArticleDetail({ article }: ArticleDetailProps) {
               );
             }
 
-            // Split into lines (~80 chars each) for the 10-line preview
-            const allLines: string[] = [];
-            for (const p of paragraphs) {
-              const words = p.split(/\s+/);
-              let line = "";
-              for (const w of words) {
-                if (line.length + w.length + 1 > 80 && line.length > 0) {
-                  allLines.push(line);
-                  line = w;
-                } else {
-                  line = line ? `${line} ${w}` : w;
-                }
-              }
-              if (line) allLines.push(line);
-              allLines.push(""); // paragraph break
-            }
+            const fullText = paragraphs.join(" ");
+            const CHAR_LIMIT = 600;
+            const needsExpand = fullText.length > CHAR_LIMIT;
 
-            const LINE_LIMIT = 10;
-            const needsExpand = allLines.length > LINE_LIMIT;
-            const visibleLines = contentExpanded ? allLines : allLines.slice(0, LINE_LIMIT);
-
-            // Re-join lines into paragraphs for display
-            const displayParagraphs: string[] = [];
-            let current = "";
-            for (const l of visibleLines) {
-              if (l === "") {
-                if (current) displayParagraphs.push(current);
-                current = "";
-              } else {
-                current = current ? `${current} ${l}` : l;
+            // Show preview (first ~600 chars, cut at sentence boundary) or full
+            let previewParagraphs = paragraphs;
+            if (!contentExpanded && needsExpand) {
+              let charCount = 0;
+              const preview: string[] = [];
+              for (const p of paragraphs) {
+                if (charCount + p.length > CHAR_LIMIT && preview.length > 0) break;
+                preview.push(p);
+                charCount += p.length;
               }
+              previewParagraphs = preview.length > 0 ? preview : [paragraphs[0]];
             }
-            if (current) displayParagraphs.push(current);
 
             return (
-              <>
-                <div className={`space-y-4 ${!contentExpanded && needsExpand ? "relative" : ""}`}>
-                  {displayParagraphs.map((paragraph, i) => (
-                    <p key={i} className="text-base leading-relaxed">
-                      {paragraph}
-                    </p>
-                  ))}
+              <div className="space-y-4">
+                <div className={!contentExpanded && needsExpand ? "relative" : ""}>
+                  <div className="space-y-4">
+                    {previewParagraphs.map((paragraph, i) => (
+                      <p key={i} className="text-base leading-relaxed">
+                        {paragraph}
+                      </p>
+                    ))}
+                  </div>
                   {!contentExpanded && needsExpand && (
-                    <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent" />
+                    <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent" />
                   )}
                 </div>
                 {needsExpand && (
@@ -401,7 +386,7 @@ export function ArticleDetail({ article }: ArticleDetailProps) {
                     )}
                   </button>
                 )}
-              </>
+              </div>
             );
           })()}
         </motion.div>

@@ -10,20 +10,44 @@ import {
   Sun,
   Moon,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
   Sparkles,
   Shield,
+  Rss,
+  Check,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { getBookmarks } from "@/lib/bookmarks";
+import { getFeedGroups, RSS_FEEDS } from "@/lib/news/rss-feeds";
+
+const SOURCES_KEY = "mynews-disabled-sources";
+
+function getDisabledSources(): string[] {
+  try {
+    const raw = localStorage.getItem(SOURCES_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function setDisabledSources(sources: string[]) {
+  localStorage.setItem(SOURCES_KEY, JSON.stringify(sources));
+}
 
 export default function ProfilePage() {
   const [bookmarkCount, setBookmarkCount] = useState(0);
   const [isDark, setIsDark] = useState(false);
+  const [sourcesOpen, setSourcesOpen] = useState(false);
+  const [disabledSources, setDisabledState] = useState<string[]>([]);
 
   useEffect(() => {
     setBookmarkCount(getBookmarks().length);
     setIsDark(document.documentElement.classList.contains("dark"));
+    setDisabledState(getDisabledSources());
   }, []);
 
   function toggleTheme() {
@@ -32,6 +56,17 @@ export default function ProfilePage() {
     document.documentElement.classList.toggle("dark", next);
     localStorage.setItem("mynews-theme", next ? "dark" : "light");
   }
+
+  function toggleSource(name: string) {
+    const updated = disabledSources.includes(name)
+      ? disabledSources.filter((s) => s !== name)
+      : [...disabledSources, name];
+    setDisabledState(updated);
+    setDisabledSources(updated);
+  }
+
+  const feedGroups = getFeedGroups();
+  const activeCount = RSS_FEEDS.length - disabledSources.length;
 
   return (
     <div className="min-h-screen bg-background pb-20 lg:pb-0">
@@ -137,11 +172,84 @@ export default function ProfilePage() {
 
         <Separator className="my-6" />
 
+        {/* Source Management */}
+        <div className="rounded-xl border border-border/50 bg-card">
+          <button
+            onClick={() => setSourcesOpen(!sourcesOpen)}
+            className="flex w-full items-center justify-between px-4 py-4"
+          >
+            <div className="flex items-center gap-3">
+              <Rss className="size-5 text-primary" />
+              <div className="text-left">
+                <p className="text-sm font-semibold">Nachrichtenquellen</p>
+                <p className="text-xs text-muted-foreground">
+                  {activeCount} von {RSS_FEEDS.length} Quellen aktiv
+                </p>
+              </div>
+            </div>
+            {sourcesOpen ? (
+              <ChevronUp className="size-4 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="size-4 text-muted-foreground" />
+            )}
+          </button>
+
+          {sourcesOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Separator />
+              <div className="space-y-4 p-4">
+                {feedGroups.map((group) => (
+                  <div key={group.group}>
+                    <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      {group.group}
+                    </h4>
+                    <div className="space-y-1">
+                      {group.feeds.map((feed) => {
+                        const isActive = !disabledSources.includes(feed.name);
+                        return (
+                          <button
+                            key={feed.name}
+                            onClick={() => toggleSource(feed.name)}
+                            className="flex w-full items-center justify-between rounded-lg px-3 py-2 transition-colors hover:bg-muted/50"
+                          >
+                            <span className={`text-sm ${isActive ? "font-medium" : "text-muted-foreground"}`}>
+                              {feed.name}
+                            </span>
+                            {isActive ? (
+                              <div className="flex size-6 items-center justify-center rounded-full bg-green-500/10">
+                                <Check className="size-3.5 text-green-500" />
+                              </div>
+                            ) : (
+                              <div className="flex size-6 items-center justify-center rounded-full bg-muted">
+                                <X className="size-3.5 text-muted-foreground" />
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+                <p className="text-xs text-muted-foreground">
+                  Deaktivierte Quellen erscheinen nicht mehr im Feed.
+                  Änderungen werden beim nächsten Laden wirksam.
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </div>
+
+        <Separator className="my-6" />
+
         {/* Footer info */}
         <div className="text-center text-xs text-muted-foreground">
           <p>MyNews.com · Version 1.0 Prototyp</p>
           <p className="mt-1">
-            Powered by Claude AI · Daten via NewsAPI
+            Powered by Claude AI · Daten via NewsAPI + RSS
           </p>
         </div>
       </div>

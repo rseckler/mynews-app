@@ -31,7 +31,16 @@ export function Feed() {
     setLoading(true);
     setVisibleCount(INITIAL_VISIBLE);
     try {
-      const res = await fetch(`/api/feed?category=${category}`);
+      // Read disabled sources from localStorage
+      let disabledParam = "";
+      try {
+        const raw = localStorage.getItem("mynews-disabled-sources");
+        if (raw) {
+          const disabled: string[] = JSON.parse(raw);
+          if (disabled.length > 0) disabledParam = `&disabled=${encodeURIComponent(disabled.join(","))}`;
+        }
+      } catch {}
+      const res = await fetch(`/api/feed?category=${category}${disabledParam}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setArticles(data.articles);

@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { BottomNav } from "./bottom-nav";
 import { ConsentBanner } from "./consent-banner";
+import { SiteFooter } from "./site-footer";
 
 /** Pages that should NOT show the bottom navigation */
 const HIDE_NAV_PATHS = ["/onboarding"];
@@ -25,6 +26,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {children}
         </motion.div>
       </AnimatePresence>
+      {showNav && <SiteFooter />}
       {showNav && <BottomNav />}
       {showNav && <ConsentBanner />}
     </>
