@@ -38,7 +38,7 @@ export default function ImpressumPage() {
         <h2>Vertreten durch</h2>
         <p>
           Bernhard Burgener, Verwaltungsratspräsident<br />
-          Peter Lanz, CFO
+          Hasan Dilsiz, CFO
         </p>
 
         <h2>Kontakt</h2>
