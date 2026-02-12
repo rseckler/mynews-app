@@ -30,6 +30,7 @@ import {
 } from "@/lib/mock-data";
 import { getArticleContent } from "@/lib/mock-content";
 import { isBookmarked, toggleBookmark } from "@/lib/bookmarks";
+import { shareArticle } from "@/lib/share";
 
 interface ArticleDetailProps {
   article: Article;
@@ -120,7 +121,12 @@ export function ArticleDetail({ article }: ArticleDetailProps) {
             >
               {bookmarked ? <BookmarkCheck className="size-4" /> : <Bookmark className="size-4" />}
             </Button>
-            <Button variant="ghost" size="icon" className="size-8">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8"
+              onClick={() => shareArticle(article.title, article.url)}
+            >
               <Share2 className="size-4" />
             </Button>
           </div>

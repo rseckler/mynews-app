@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { ArticleCard } from "./article-card";
 import { AiSummary } from "./ai-summary";
 import { CategoryTabs } from "./category-tabs";
@@ -17,6 +19,8 @@ export function Feed() {
   const [source, setSource] = useState<"live" | "mock">("mock");
   const [summaryArticle, setSummaryArticle] = useState<Article | null>(null);
   const [summaryOpen, setSummaryOpen] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const fetchArticles = useCallback(async (category: Category) => {
     setLoading(true);
@@ -37,8 +41,10 @@ export function Feed() {
       setArticles(fallback);
       setSource("mock");
       cacheArticles(fallback);
+      setLastUpdated(new Date());
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, []);
 
@@ -50,6 +56,11 @@ export function Feed() {
   const featuredArticle = articles[0];
   const standardArticles = articles.slice(1, 7);
   const compactArticles = articles.slice(7);
+
+  function handleRefresh() {
+    setRefreshing(true);
+    fetchArticles(activeCategory);
+  }
 
   function handleSummaryClick(article: Article) {
     setSummaryArticle(article);
@@ -71,10 +82,10 @@ export function Feed() {
         onCategoryChange={handleCategoryChange}
       />
 
-      {/* Source indicator */}
+      {/* Source indicator + refresh */}
       {!loading && (
         <div className="mx-auto max-w-7xl px-4 lg:px-8">
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <div
               className={`size-1.5 rounded-full ${source === "live" ? "bg-green-500" : "bg-amber-500"}`}
             />
@@ -83,6 +94,21 @@ export function Feed() {
                 ? "Live-Nachrichten via NewsAPI"
                 : "Demo-Daten (kein API-Key)"}
             </span>
+            {lastUpdated && (
+              <span className="hidden sm:inline">
+                · {lastUpdated.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
+              </span>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="ml-auto size-7 text-muted-foreground hover:text-foreground"
+              onClick={handleRefresh}
+              disabled={refreshing}
+              aria-label="Aktualisieren"
+            >
+              <RefreshCw className={`size-3.5 ${refreshing ? "animate-spin" : ""}`} />
+            </Button>
           </div>
         </div>
       )}
@@ -143,7 +169,7 @@ export function Feed() {
 
           {/* Sidebar (Desktop) */}
           <aside className="hidden space-y-4 lg:block">
-            <TrendingTopics />
+            <TrendingTopics articles={articles} />
 
             {/* Info Box */}
             <div className="rounded-xl border border-border/50 bg-card p-4">

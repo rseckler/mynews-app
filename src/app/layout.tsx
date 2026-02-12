@@ -11,10 +11,27 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "MyNews.com – Curated for You",
+  title: {
+    default: "MyNews.com – Curated for You",
+    template: "%s | MyNews.com",
+  },
   description:
     "AI-kuratierte Nachrichten aus vertrauenswürdigen Quellen. Personalisiert, transparent, aktuell.",
   keywords: ["news", "nachrichten", "AI", "personalisiert", "kuratiert"],
+  openGraph: {
+    type: "website",
+    locale: "de_DE",
+    siteName: "MyNews.com",
+    title: "MyNews.com – Curated for You",
+    description:
+      "AI-kuratierte Nachrichten aus vertrauenswürdigen Quellen. Personalisiert, transparent, aktuell.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "MyNews.com – Curated for You",
+    description:
+      "AI-kuratierte Nachrichten aus vertrauenswürdigen Quellen.",
+  },
 };
 
 export const viewport: Viewport = {

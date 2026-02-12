@@ -31,6 +31,7 @@ import {
   getFeedReasonLabel,
 } from "@/lib/mock-data";
 import { isBookmarked, toggleBookmark } from "@/lib/bookmarks";
+import { shareArticle } from "@/lib/share";
 
 interface ArticleCardProps {
   article: Article;
@@ -160,11 +161,12 @@ export function ArticleCard({
                     variant="ghost"
                     size="icon"
                     className="size-8 text-muted-foreground"
+                    onClick={() => shareArticle(article.title, article.url)}
                   >
                     <ExternalLink className="size-3.5" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Original lesen</TooltipContent>
+                <TooltipContent>Teilen</TooltipContent>
               </Tooltip>
             </div>
 
