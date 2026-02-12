@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60; // Allow up to 60s for TTS generation on Vercel
 
 // Cache audio for the current day to avoid re-generating
 let cachedAudio: { date: string; data: ArrayBuffer } | null = null;

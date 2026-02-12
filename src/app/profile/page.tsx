@@ -68,25 +68,35 @@ export default function ProfilePage() {
         </motion.div>
 
         {/* Quick actions */}
-        <div className="mb-6 grid grid-cols-2 gap-3">
+        <div className="mb-6 grid grid-cols-3 gap-3">
           <Link
             href="/saved"
-            className="flex items-center gap-3 rounded-xl border border-border/50 bg-card p-4 transition-colors hover:border-border"
+            className="flex flex-col items-center gap-2 rounded-xl border border-border/50 bg-card p-4 transition-colors hover:border-border"
           >
             <BookmarkCheck className="size-5 text-primary" />
-            <div>
-              <p className="text-sm font-semibold">{bookmarkCount} Gespeichert</p>
-              <p className="text-xs text-muted-foreground">Artikel</p>
+            <div className="text-center">
+              <p className="text-sm font-semibold">{bookmarkCount}</p>
+              <p className="text-xs text-muted-foreground">Gespeichert</p>
             </div>
           </Link>
           <Link
             href="/briefing"
-            className="flex items-center gap-3 rounded-xl border border-border/50 bg-card p-4 transition-colors hover:border-border"
+            className="flex flex-col items-center gap-2 rounded-xl border border-border/50 bg-card p-4 transition-colors hover:border-border"
           >
             <Sparkles className="size-5 text-primary" />
-            <div>
-              <p className="text-sm font-semibold">Briefing</p>
-              <p className="text-xs text-muted-foreground">Tages-Update</p>
+            <div className="text-center">
+              <p className="text-sm font-semibold">Morgen</p>
+              <p className="text-xs text-muted-foreground">Briefing</p>
+            </div>
+          </Link>
+          <Link
+            href="/digest"
+            className="flex flex-col items-center gap-2 rounded-xl border border-border/50 bg-card p-4 transition-colors hover:border-border"
+          >
+            <Moon className="size-5 text-indigo-500" />
+            <div className="text-center">
+              <p className="text-sm font-semibold">Abend</p>
+              <p className="text-xs text-muted-foreground">Digest</p>
             </div>
           </Link>
         </div>

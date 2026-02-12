@@ -26,7 +26,9 @@ export function BottomNav() {
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border/50 bg-background/80 backdrop-blur-xl lg:hidden">
       <div className="mx-auto flex h-16 max-w-lg items-center justify-around px-4">
         {NAV_ITEMS.map((item) => {
-          const isActive = pathname === item.href;
+          const isActive =
+            pathname === item.href ||
+            (item.href === "/briefing" && pathname === "/digest");
           return (
             <Link
               key={item.label}
