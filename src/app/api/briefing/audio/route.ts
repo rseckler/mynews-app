@@ -6,9 +6,8 @@ export const maxDuration = 60;
 export async function POST(request: Request) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    console.error("TTS: OPENAI_API_KEY not set");
     return NextResponse.json(
-      { error: "OPENAI_API_KEY ist nicht konfiguriert. Bitte in den Vercel-Umgebungsvariablen setzen." },
+      { error: "OPENAI_API_KEY ist nicht konfiguriert" },
       { status: 503 }
     );
   }
@@ -28,12 +27,9 @@ export async function POST(request: Request) {
   // Trim text to stay within TTS limits (~4096 chars)
   const trimmedText = text.slice(0, 4000);
 
+  console.log(`TTS: Generating audio for ${trimmedText.length} chars, key starts with ${apiKey.slice(0, 8)}...`);
+
   try {
-    console.log(`TTS: Generating audio for ${trimmedText.length} chars...`);
-
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 50000); // 50s timeout
-
     const res = await fetch("https://api.openai.com/v1/audio/speech", {
       method: "POST",
       headers: {
@@ -47,16 +43,13 @@ export async function POST(request: Request) {
         response_format: "mp3",
         speed: 1.0,
       }),
-      signal: controller.signal,
     });
-
-    clearTimeout(timeout);
 
     if (!res.ok) {
       const errText = await res.text();
       console.error("OpenAI TTS error:", res.status, errText);
       return NextResponse.json(
-        { error: `OpenAI TTS Fehler (${res.status}): ${errText.slice(0, 200)}` },
+        { error: `OpenAI TTS Fehler (${res.status}): ${errText.slice(0, 300)}` },
         { status: 502 }
       );
     }
@@ -70,20 +63,16 @@ export async function POST(request: Request) {
         "Cache-Control": "public, max-age=3600",
       },
     });
-  } catch (err) {
-    console.error("TTS API error:", err);
-    const message = err instanceof Error && err.name === "AbortError"
-      ? "Audio-Generierung hat zu lange gedauert (Timeout)"
-      : "Audio-Generierung fehlgeschlagen";
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
+    console.error("TTS catch error:", msg);
     return NextResponse.json(
-      { error: message },
+      { error: `Audio-Fehler: ${msg}` },
       { status: 500 }
     );
   }
 }
 
-/** Health check – verify OPENAI_API_KEY is set */
 export async function GET() {
-  const hasKey = !!process.env.OPENAI_API_KEY;
-  return NextResponse.json({ configured: hasKey });
+  return NextResponse.json({ configured: !!process.env.OPENAI_API_KEY });
 }
