@@ -121,6 +121,15 @@ export default function DigestPage() {
       }
       return;
     }
+
+    // Create Audio element immediately during user gesture to unlock playback
+    const audio = new Audio();
+    audioRef.current = audio;
+    audio.addEventListener("timeupdate", () => {
+      if (audio.duration) setAudioProgress((audio.currentTime / audio.duration) * 100);
+    });
+    audio.addEventListener("ended", () => { setIsPlaying(false); setAudioProgress(0); });
+
     setAudioLoading(true);
     setAudioError(null);
     try {
@@ -137,17 +146,15 @@ export default function DigestPage() {
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       audioUrlRef.current = url;
-      const audio = new Audio(url);
-      audioRef.current = audio;
-      audio.addEventListener("timeupdate", () => {
-        if (audio.duration) setAudioProgress((audio.currentTime / audio.duration) * 100);
-      });
-      audio.addEventListener("ended", () => { setIsPlaying(false); setAudioProgress(0); });
+
+      // Set source and play — audio element was created during user gesture
+      audio.src = url;
       await audio.play();
       setIsPlaying(true);
     } catch (err) {
       console.error("Audio error:", err);
       setAudioError(err instanceof Error ? err.message : "Audio-Generierung fehlgeschlagen");
+      audioRef.current = null;
     } finally {
       setAudioLoading(false);
     }
