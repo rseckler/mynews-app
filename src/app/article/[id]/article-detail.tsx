@@ -34,6 +34,7 @@ import { getArticleContent } from "@/lib/mock-content";
 import { isBookmarked, toggleBookmark } from "@/lib/bookmarks";
 import { shareArticle } from "@/lib/share";
 import { getFeedback, setFeedback, type FeedbackType } from "@/lib/feedback";
+import { getSourcePref, setSourcePref, type SourcePref } from "@/lib/source-prefs";
 
 interface ArticleDetailProps {
   article: Article;
@@ -69,6 +70,7 @@ export function ArticleDetail({ article }: ArticleDetailProps) {
   const [aiSentiment, setAiSentiment] = useState<string | undefined>(article.sentiment);
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [feedback, setFeedbackState] = useState<FeedbackType>(() => getFeedback(article.id));
+  const [sourcePref, setSourcePrefState] = useState<SourcePref>(() => getSourcePref(article.sourceName));
 
   const categoryColor = getCategoryColor(article.category);
   const categoryLabel = getCategoryLabel(article.category);
@@ -384,6 +386,42 @@ export function ArticleDetail({ article }: ArticleDetailProps) {
                     </p>
                   </div>
                 </div>
+                {/* Source preference */}
+                <Separator className="my-1" />
+                <div>
+                  <p className="mb-2 text-xs font-medium">
+                    Quelle: {article.sourceName}
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        const result = setSourcePref(article.sourceName, "more");
+                        setSourcePrefState(result);
+                      }}
+                      className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                        sourcePref === "more"
+                          ? "bg-green-500/10 text-green-600 ring-1 ring-green-500/30"
+                          : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                      }`}
+                    >
+                      {sourcePref === "more" ? "Mehr gewünscht" : "Mehr davon"}
+                    </button>
+                    <button
+                      onClick={() => {
+                        const result = setSourcePref(article.sourceName, "less");
+                        setSourcePrefState(result);
+                      }}
+                      className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                        sourcePref === "less"
+                          ? "bg-red-500/10 text-red-600 ring-1 ring-red-500/30"
+                          : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                      }`}
+                    >
+                      {sourcePref === "less" ? "Weniger gewünscht" : "Weniger davon"}
+                    </button>
+                  </div>
+                </div>
+
                 <div className="rounded-lg bg-muted/50 px-3 py-2">
                   <p className="text-xs text-muted-foreground">
                     MyNews.com verwendet keine personenbezogenen Daten für

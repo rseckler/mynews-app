@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import { BottomNav } from "./bottom-nav";
 import { ConsentBanner } from "./consent-banner";
 
@@ -13,7 +14,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      {children}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={pathname}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15, ease: "easeInOut" }}
+        >
+          {children}
+        </motion.div>
+      </AnimatePresence>
       {showNav && <BottomNav />}
       {showNav && <ConsentBanner />}
     </>
